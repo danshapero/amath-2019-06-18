@@ -163,6 +163,23 @@ def tricontourf(function, *args, **kwargs):
     return axes.tricontourf(triangulation, vals, *args, **kwargs)
 
 
+def tripcolor(function, *args, **kwargs):
+    r"""Plot a discontinuous finite element field"""
+    axes = kwargs.pop('axes', plt.gca())
+
+    mesh = function.ufl_domain()
+    coordinates = _get_coordinates(mesh)
+    coords = coordinates.dat.data_ro
+    x, y = coords[:, 0], coords[:, 1]
+
+    triangles = coordinates.cell_node_map().values
+    triangulation = matplotlib.tri.Triangulation(x, y, triangles)
+
+    Q = firedrake.FunctionSpace(mesh, family='DG', degree=0)
+    fn = firedrake.project(function, Q)
+    return axes.tripcolor(triangulation, fn.dat.data_ro, *args, **kwargs)
+
+
 def quiver(function, *args, **kwargs):
     r"""Make a quiver plot of a vector field"""
     if function.ufl_shape != (2,):
